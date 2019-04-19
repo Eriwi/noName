@@ -1,8 +1,9 @@
-from server import app, login, db
+from server import app, login, db, mail
 from flask import render_template, jsonify, request
 from server.forms import ContactForm, LoginForm, RegistrationForm, ArticleForm
 from flask_login import current_user, login_user, logout_user, login_required
 from server.models import User, Article
+from flask_mail import Message
 
 
 @app.route('/')
@@ -28,6 +29,9 @@ def contact():
         return render_template("contact.html", form=form)
     if request.method == 'POST':
         if form.validate_on_submit():
+            msg = Message('Hi there!', sender='', recipients=[form.email.data])
+            msg.body = 'Your message:\n' + form.message.data
+            mail.send(msg)
             return jsonify({'message': 'Thank you for your message'})
         else:
             return jsonify({'message': 'Please make sure the email you have entered is correct.'})
@@ -112,8 +116,8 @@ def article(article_id):
 @login_required
 def delete(article_id):
     article = Article.query.filter_by(id=article_id).first()
-    if article is not None:
+    if article is not None and current_user.id == article.author_id:
         db.session.delete(article)
         db.session.commit()
-        return jsonify({'message':'The article has been deleted.'})
-    return jsonify({'message':'Something went wrong, please try again.'})
+        return jsonify({'message': 'The article has been deleted.'})
+    return jsonify({'message': 'Something went wrong, please try again.'})

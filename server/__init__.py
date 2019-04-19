@@ -6,6 +6,7 @@ from flask_basicauth import BasicAuth
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.exceptions import HTTPException
+from flask_mail import Mail
 
 class AuthException(HTTPException):
     def __init__(self, message):
@@ -30,8 +31,14 @@ class ModelView(sqla.ModelView):
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+mail = Mail(app)
+
+
 admin = Admin(app, name='noName', template_mode='bootstrap3')
+
 db = SQLAlchemy(app)
+
 login = LoginManager(app)
 login.login_view = 'login'
 basic_auth = BasicAuth(app)
