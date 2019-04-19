@@ -1,0 +1,68 @@
+<body>
+
+<div style="margin-top: 2em" id="article-list">
+    <div class="row d-flex justify-content-center">
+        {% for article in articles %}
+        <div class="card col-3 h-150" style="width: 18rem; margin-left: 1em; margin-top: 1em">
+            <div class="card-body" id="{{article.id}}">
+                <h5 class="card-title">{{article.title}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{article.author}}</h6>
+                <p class="card-text">{{article.desc}}</p>
+                <a href="#" class="card-link btn btn-primary">View</a>
+                {% if current_user.is_authenticated%}
+                {% if current_user.id == article.author_id %}
+                <a href="#" class="btn btn-danger delete">Delete</a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class=" row justify-content-center" id="article-detail">
+    <div class="card col-4">
+        <div class="card-body">
+            <h5 class="card-title" id="detail-title"></h5>
+            <h6 class="card-subtitle mb-2 text-muted" id="detail-author"></h6>
+            <p class="card-text" id="detail-text"></p>
+            <a href="#" class="btn btn-primary" id="back">Back</a>
+        </div>
+    </div>
+</div>
+
+
+</body>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#article-detail').hide();
+
+        $('#back').click(function () {
+            $('#article-detail').hide();
+            $('#article-list').show();
+        });
+
+        $('.card-link').click(function () {
+            let art_id = $(this).parent().attr('id');
+            $.get("/article/" + art_id, function (data) {
+                $("#detail-title").html(data['title']);
+                $("#detail-text").html(data['text']);
+                $("#detail-author").html(data['author']);
+            });
+            $('#article-detail').show();
+            $('#article-list').hide();
+        });
+
+        $('.delete').click(function () {
+            let art_id = $(this).parent().attr('id');
+            $.post("/delete/" + art_id, function (data) {
+                alert(data['message']);
+                $.get("/articles", function (data) {
+                    $(".container").html(data);
+                });
+            });
+        });
+    });
+</script>

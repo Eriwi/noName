@@ -1,0 +1,45 @@
+<form action="" method="" novalidate>
+    {{form.hidden_tag()}}
+    <div>
+        {{form.email.label}}<br>
+        {{form.email(size=32)}}
+    </div>
+    <div>
+        {{form.message.label}}<br>
+        {{form.message()}}
+    </div>
+    <div>
+        <input type="submit" value="Send">
+    </div>
+</form>
+
+
+<script>
+    $(document).ready(function () {
+        $('form').submit(function (e) {
+            var url = "{{ url_for('contact') }}";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $('form').serialize(),
+                success: function (data) {
+                    alert(data['message']);
+                    if (data['message'] == 'Thank you for your message') {
+                        $.get("/index", function (data) {
+                            $(".container").html(data);
+                        });
+                    }
+                }
+            });
+            e.preventDefault();
+        });
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                }
+            }
+        })
+    });
+</script>

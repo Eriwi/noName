@@ -1,0 +1,45 @@
+<form action="" method="" novalidate>
+    {{form.hidden_tag()}}
+    <div>
+        {{form.title.label}}<br>
+        {{form.title(size=32)}}
+    </div>
+    <div>
+        {{form.text.label}}<br>
+        {{form.text(rows=20, cols=60)}}
+    </div>
+    <div>
+        <input type="submit" value="Send">
+    </div>
+</form>
+
+
+<script>
+    $(document).ready(function() {
+        $('form').submit(function (e) {
+            var url = "{{ url_for('create_article') }}";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $('form').serialize(),
+                success: function (data) {
+                    alert(data['message'])
+                    if (data['message'] == 'Your article is now added'){
+                        $.get("/articles", function (data) {
+                            $(".container").html(data);
+                        });
+                    }
+                }
+            });
+            e.preventDefault();
+        });
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                }
+            }
+        })
+    });
+</script>
